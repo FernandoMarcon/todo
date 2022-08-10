@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="theme-color" content="#ffffff">
+	<meta name="description" content="A to-do app build with Flask, MongoDB and Docker">
+
+	<title>To-Do App</title>
+
+	<link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.2/dist/terminal.min.css" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+	<style>
+		:root {
+			--global-font-size: 15px;
+			--global-line-height: 1.4em;
+			--global-space: 10px;
+			--font-stack: Menlo, Monaco, Lucida Console, Liberation Mono,
+				DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace,
+				serif;
+			--mono-font-stack: Menlo, Monaco, Lucida Console, Liberation Mono,
+				DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace,
+				serif;
+			--background-color: #222225;
+			--page-width: 60em;
+			--font-color: #e8e9ed;
+			--invert-font-color: #222225;
+			--secondary-color: #a3abba;
+			--tertiary-color: #a3abba;
+			--primary-color: #62c4ff;
+			--error-color: #ff3c74;
+			--progress-bar-background: #3f3f44;
+			--progress-bar-fill: #62c4ff;
+			--code-bg-color: #3f3f44;
+			--input-style: solid;
+			--display-h1-decoration: none;
+		}
+	</style>
+
+	<style>
+		.todo>header {
+			color: darkgray;
+			background-color: rgba(132, 20, 20, 0.682);
+			font-weight: bold;
+		}
+
+		.doing>header {
+			color: black;
+			background-color: rgba(190, 143, 23, 0.739);
+			font-weight: bold;
+		}
+
+		.done>header {
+			color: black;
+			background-color: rgba(145, 184, 4, 0.801);
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body class="terminal">
+	<div class="container">
+		<div class="terminal-nav">
+			<header class="terminal-logo">
+				<div class="logo terminal-prompt"><a href="#" class="no-style">To-Do App</a></div>
+			</header>
+			<nav class="terminal-menu">
+				<ul vocab="https://schema.org/" typeof="BreadcrumbList">
+					<li property="itemListElement" typeof="ListItem"><a href="#" property="item" typeof="WebPage"
+							class="menu-item active"><span property="name">To-Do</span></a>
+						<meta property="position" content="1">
+					</li>
+					<li property="itemListElement" typeof="ListItem"><a href="#" property="item" typeof="WebPage"
+							class="menu-item active"><span property="name">Doing</span></a>
+						<meta property="position" content="1">
+					</li>
+					<li property="itemListElement" typeof="ListItem"><a href="#" property="item" typeof="WebPage"
+							class="menu-item active"><span property="name">Done</span></a>
+						<meta property="position" content="1">
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+	<main>
+
+		<div class="container">
+			<p>A to-do app build with Flask, MongoDB and Docker</p>
+			<hr>
+		</div>
+
+		<div class="container terminal-media-left">
+			<form action="/new" method="POST">
+				<fieldset>
+					<legend><strong>New Task</strong></legend>
+					<div class="form-group">
+						<label for="note-title">Title:</label>
+						<input type="text" name="note-title" placeholder="Title"></input>
+					</div>
+					<div class="form-group">
+						<textarea id="note-description" placeholder="Description..." cols="30" rows="5" name="note-description"></textarea>
+					</div>
+					<div class="form-group">
+						<label for="note-status">Status:</label>
+						<select id="note-status" name="note-status">
+							<option value="todo"> To-Do </option>
+							<option value="doing"> Doing </option>
+							<option value="done"> Done </option>
+						</select>
+					</div>
+					<div class="form-group">
+						<button class="btn btn-primary btn-ghost" type="submit" role="button" name="submit"
+							id="submit">Add</button>
+					</div>
+				</fieldset>
+			</form>
+		</div>
+
+		<div class="terminal-media-left">
+			<div class="container terminal-media-left">
+				<header>
+					<h2 id="Cards">Tasks:</h2>
+				</header>
+
+				<div class="terminal-timeline" id="cards">
+					<div class="terminal-card todo">
+						<header>Note 1</header>
+						<div>
+							Lorem ipsum dolor sit amet, consectetur adipisicing elit. Expedita, quas
+							ex vero enim in doloribus officiis ullam vel nam esse sapiente velit
+							incidunt. Eaque quod et, aut maiores excepturi sint.
+						</div>
+					</div>
+					<br>
+					{% for item in items %}
+					<!-- <div class="terminal-card {{ item.status}}" id="{{ item.title }}" onmouseover="selectCard()"> -->
+					<div class="terminal-card {{ item.status}}" id="{{ item._id }}">
+						<!-- <span id="id" value="{{ item._id }}"></span> -->
+						<header id='card'> {{ item.title }} </header>
+						<div> {{ item.description }} </div>
+					</div>
+					<br>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+		<div class="terminal-media-left" id="card"></div>
+		</div>
+	</main>
+
+
+	<script>
+		// function selectCard() {
+		// 	const card = document.getElementById("card");
+		// 	console.log(card.parentElement.id)
+		// }
+
+		const cards = document.getElementById('cards');
+		
+		async function fetchCard(id) {
+			const response = await fetch('/get/'+id)
+			const card = await response.json();
+			return card;
+		}
+
+		function rmCard(id){
+			const response = fetch('/rm/'+id)
+			console.log(id);
+		}
+		cards.addEventListener('click', function handleClick(event) {
+			const id = event.target.parentElement.id
+			rmCard(id);
+		});
+
+	</script>
+</body>
+
+</html>
